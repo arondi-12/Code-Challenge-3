@@ -8,14 +8,45 @@ async function getData() {
   
       const json = await response.json();
       const list = document.getElementById('films');
-      list.innerHTML = json.map(i => `<li class="film item" onclick='updateUi(${JSON.stringify(i)})'>${i.title}</li>`).join('')
-      console.log(json);
-    } catch (error) {
-      console.error(error.message);
-    }
-    
+        // Render the list of films with a delete button for each film
+    list.innerHTML = json.map(film => `
+      <li class="film item">
+        <span onclick='updateUi(${JSON.stringify(film)})'>${film.title}</span>
+        <button onclick="deleteFilm(${film.id})" class="delete-btn">Delete</button>
+      </li>
+    `).join('');
+
+  } catch (error) {
+    console.error(error.message);
   }
-  getData()
+}
+
+// Function to handle film deletion
+async function deleteFilm(filmId) {
+  const url = `http://localhost:3000/films/${filmId}`;
+  
+  try {
+    // Send DELETE request to the server
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (response.ok) {
+      // Remove the film from the DOM after successful deletion
+      const filmElement = document.querySelector(`button[onclick="deleteFilm(${filmId})"]`).parentElement;
+      filmElement.remove();
+      console.log(`Film with ID ${filmId} deleted successfully`);
+    } else {
+      console.error(`Failed to delete film with ID ${filmId}`);
+    }
+  } catch (error) {
+    console.error(`Error deleting film: ${error.message}`);
+  }
+}   
+  
   function updateUi(film){
     console.log(film.poster)
    const imageElement = document.getElementById("poster")
@@ -98,3 +129,4 @@ function buyTicket(filmId) {
         });
 }
   }
+  getData();
